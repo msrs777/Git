@@ -17,7 +17,21 @@ pipeline {
 
         stage('Push Docker Image') {
             steps {
-                sh 'docker push swain77/my_app:${BUILD_NUMBER}'
+                withCredentials([
+                    usernamePassword(
+                        credentialsId: 'dockerhub',
+                        usernameVariable: 'DOCKER_USER',
+                        passwordVariable: 'DOCKER_PASS'
+                    )
+                ]) {
+                    sh '''
+                        echo "$DOCKER_PASS" | docker login \
+                            -u "$DOCKER_USER" \
+                            --password-stdin
+
+                        docker push swain77/my_app:${BUILD_NUMBER}
+                    '''
+                }
             }
         }
     }
